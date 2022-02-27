@@ -1,6 +1,2 @@
 #include <iostream>
-
-int main()
-{
-    return 0;
-}
+#define h 2

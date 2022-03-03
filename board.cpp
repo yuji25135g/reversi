@@ -12,6 +12,7 @@ class Board{
     void displayBoard();
     unsigned long getBlack(){return black;}
     unsigned long getWhite(){return white;}
+    int* getEvaluateChart(){return &evaluateChart;}
     unsigned long makeLegalBoard(unsigned long player, unsigned long opponent);
     void displayLegalBoard(unsigned long legalBoard);
 };
@@ -20,6 +21,7 @@ Board::Board()
     black=0x0000000810000000;
     white=0x0000001008000000;
 }
+
 void Board::displayBoard()
 {   
     unsigned long check = 0x8000000000000000;
@@ -161,8 +163,9 @@ int main()
 {   
     Board board;
     board.displayBoard();
-    unsigned long legalBoard = board.makeLegalBoard(board.getBlack(),(board.getWhite());
-    board.displayLegalBoard(legalBoard);    
+    board.initializeEvaluateChart();
+    int* array = board.getEvaluateChart();
+    cout << array[0][0];
 
     return 0;
 }

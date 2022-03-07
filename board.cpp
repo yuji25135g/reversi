@@ -12,9 +12,9 @@ class Board{
     void displayBoard();
     unsigned long getBlack(){return black;}
     unsigned long getWhite(){return white;}
-    int* getEvaluateChart(){return &evaluateChart;}
     unsigned long makeLegalBoard(unsigned long player, unsigned long opponent);
-    void displayLegalBoard(unsigned long legalBoard);
+    void displayLegalBoard(unsigned long legalBoard, unsigned long black, unsigned long white);
+    void reverse(unsigned long put, unsigned long player, unsigned long opponent);
 };
 Board::Board()
 {
@@ -133,7 +133,7 @@ unsigned long Board::makeLegalBoard(unsigned long player, unsigned long opponent
     return (rightLegalBoard|leftLegalBoard|upLegalBoard|downLegalBoard|upperRightLegalBoard|bottomRightLegalBoard|upperLeftLegalBoard|bottomRightLegalBoard);
 }
 
-void Board::displayLegalBoard(unsigned long legalBoard)
+void Board::displayLegalBoard(unsigned long legalBoard, unsigned long black, unsigned long white)
 {   
     unsigned long check = 0x8000000000000000;
     int count = 0;
@@ -159,13 +159,75 @@ void Board::displayLegalBoard(unsigned long legalBoard)
     }
 }
 
+unsigned long transfer(unsigned long put, int i)
+{
+    switch (i) {
+        case 0: //上
+            return (put << 8) & 0xffffffffffffff00;
+            break;
+        case 1: //右上
+            return (put << 7) & 0x7f7f7f7f7f7f7f00;
+            break;
+        case 2: //右
+            return (put >> 1) & 0x7f7f7f7f7f7f7f7f;
+            break;
+        case 3: //右下
+            return (put >> 9) & 0x007f7f7f7f7f7f7f;
+            break;
+        case 4: //下
+            return (put >> 8) & 0x00ffffffffffffff;
+            break;
+        case 5: //左下
+            return (put >> 7) & 0x00fefefefefefefe;
+            break;
+        case 6: //左
+            return (put << 1) & 0xfefefefefefefefe;
+            break;
+        case 7: //左上
+            return (put << 9) & 0xfefefefefefefe00;
+            break;
+        default:
+            return 0;
+            break;
+    }
+}
+
+unsigned long newBoard[2];
+
+void Board::reverse(unsigned long put, unsigned long player, unsigned long opponent)
+{   
+    // 反転する石にビットが立つ整数
+    unsigned long rev = 0;
+    for (int i=0; i<8; i++)
+    {   
+        unsigned long rev_ = 0;
+        unsigned long mask = transfer(put, i);
+        while ((mask != 0) && (mask & opponent) != 0)
+        {
+            rev_ |= mask;
+            mask = transfer(mask, i);
+        } 
+        if ((mask & player) != 0 )
+        {
+            rev |= rev_;
+        }
+    }
+    // playerの盤面
+    newBoard[0] = player ^ (put | rev);
+    // opponentの盤面
+    newBoard[1] = opponent ^ rev;
+    // return newBoard;
+}
+
 int main()
 {   
     Board board;
     board.displayBoard();
-    board.initializeEvaluateChart();
-    int* array = board.getEvaluateChart();
-    cout << array[0][0];
+    unsigned long black = 0x0400000000000000;
+    unsigned long white = 0x0200000000000000;
+    board.displayLegalBoard(board.makeLegalBoard(black,white), black, white);
+    board.reverse(0x0100000000000000, black, white);
+    board.displayLegalBoard(board.makeLegalBoard(newBoard[0], newBoard[1]), newBoard[0], newBoard[1]);
 
     return 0;
 }

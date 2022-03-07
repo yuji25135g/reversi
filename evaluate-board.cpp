@@ -33,8 +33,24 @@ void initializeEvaluateChart()
     }
 }
 
+int evaluateBoard(unsigned long board)
+{   
+    int value = 0;
+    for (int i=0; i<4; i++)
+    {
+        value += evaluateChart[i][(board >> (8*i)) & 0xff];
+    }
+    for (int i=0; i<4; i++)
+    {
+        value += evaluateChart[3-i][(board >> (8*(i+4))) & 0xff];
+    }
+    return value;
+}
+
 int main()
 {
     initializeEvaluateChart();
+    unsigned long board = 0x0000000000020000;
+    cout << evaluateBoard(board);
     return 0;
 }
